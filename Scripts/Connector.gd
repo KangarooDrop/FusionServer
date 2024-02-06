@@ -25,7 +25,7 @@ func _init():
 
 func _ready():
 	Server.connect("onPlayerConnect", self.onPlayerConnect)
-	Server.connect("onPeerDisconnect", self.onPeerDisconnect)
+	Server.connect("onPlayerDisconnect", self.onPlayerDisconnect)
 
 func onPlayerConnect(playerID : int):
 	var playerIP : String = Server.serverPeer.get_peer(playerID).get_remote_address()
@@ -51,7 +51,7 @@ func onPlayerConnect(playerID : int):
 	print("REJECTED: User(" + playerIP + ":" + str(playerPort) + ")")
 	Server.serverPeer.disconnect_peer(playerID, true)
 
-func onPeerDisconnect(playerID : int):
+func onPlayerDisconnect(playerID : int):
 	if playerID in Server.connectedPlayers.keys():
 		var playerIP : String = Server.connectedPlayers[playerID][0]
 		var playerPort : int = Server.connectedPlayers[playerID][1]

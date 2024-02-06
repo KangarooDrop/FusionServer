@@ -11,8 +11,8 @@ var damage : int = 0
 
 var abilities : Array = []
 
-var owner : PlayerData = null
-var controller : PlayerData = null
+var owner : PlayerObject = null
+var controller : PlayerObject = null
 
 var node = null
 
@@ -26,10 +26,10 @@ func _init(uuid : int, name : String, power : int, toughness : int, abilities : 
 	self.toughness = toughness
 	self.abilities = abilities
 
-func setOwner(owner : PlayerData) -> void:
+func setOwner(owner : PlayerObject) -> void:
 	self.owner = owner
 
-func setController(controller : PlayerData) -> void:
+func setController(controller : PlayerObject) -> void:
 	self.controller = controller
 
 func setDamage(damage : int) -> void:
@@ -37,6 +37,3 @@ func setDamage(damage : int) -> void:
 
 func setZone(zone : int) -> void:
 	self.zone = zone
-
-func setNode(node) -> void:
-	pass

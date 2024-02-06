@@ -15,7 +15,7 @@ var disconnectTimer : Dictionary = {}
 var connectedPlayers : Dictionary = {}
 
 signal onPlayerConnect(playerID : int)
-signal onPlayerDIsconnect(playerID : int)
+signal onPlayerDisconnect(playerID : int)
 
 func _ready():
 	if port == -1:
@@ -34,10 +34,10 @@ func _ready():
 	serverPeer.connect("peer_disconnected", self.onPeerDisconnected)
 
 func onPeerConnected(id : int):
-	emit_signal("onPlayerConnect", [id])
+	emit_signal("onPlayerConnect", id)
 
 func onPeerDisconnected(id : int):
-	emit_signal("onPlayerDisconnect", [id])
+	emit_signal("onPlayerDisconnect", id)
 
 func _process(delta):
 	if not isAllConnected:
