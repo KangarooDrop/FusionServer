@@ -1,5 +1,5 @@
 
-class_name UserConnection
+class_name UserAddress
 
 var ip : String = ""
 var port : int = -1
@@ -14,8 +14,8 @@ func matches(ip : String, port : int) -> bool:
 func _to_string():
 	return ip + ":" + str(port)
 
-static func strip(data : String) -> UserConnection:
+static func strip(data : String) -> UserAddress:
 	var split : Array = data.split(':')
 	if split.size() != 2:
 		return null
-	return UserConnection.new(split[0], int(split[1]))
+	return UserAddress.new(split[0], int(split[1]))

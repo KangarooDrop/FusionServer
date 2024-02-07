@@ -11,13 +11,15 @@ var damage : int = 0
 
 var abilities : Array = []
 
-var owner : PlayerObject = null
-var controller : PlayerObject = null
+var owner = null
+var controller = null
 
 var node = null
 
 enum ZONES {NONE, DECK, HAND, GRAVEYARD, TERRITORY, QUEUE, FUSED}
 var zone : int = ZONES.NONE
+
+####################################################################################################
 
 func _init(uuid : int, name : String, power : int, toughness : int, abilities : Array):
 	self.uuid = uuid
@@ -26,10 +28,10 @@ func _init(uuid : int, name : String, power : int, toughness : int, abilities : 
 	self.toughness = toughness
 	self.abilities = abilities
 
-func setOwner(owner : PlayerObject) -> void:
+func setOwner(owner) -> void:
 	self.owner = owner
 
-func setController(controller : PlayerObject) -> void:
+func setController(controller) -> void:
 	self.controller = controller
 
 func setDamage(damage : int) -> void:
@@ -37,3 +39,5 @@ func setDamage(damage : int) -> void:
 
 func setZone(zone : int) -> void:
 	self.zone = zone
+
+####################################################################################################

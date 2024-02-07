@@ -1,20 +1,37 @@
 
 class_name HandObject
 
-var player : PlayerObject = null
+var player = null
+var deck = null
+
 var cards : Array = []
 
-signal beforeAdd(cardData : CardObject)
-signal afterAdd(cardData : CardObject)
+####################################################################################################
 
-signal beforeRemove(cardData : CardObject)
-signal afterRemove(cardData : CardObject)
+signal before_add(card)
+signal after_add(card)
 
-func _init(player : PlayerObject):
+signal before_remove(card)
+signal after_remove(card)
+
+####################################################################################################
+
+func setPlayer(player) -> HandObject:
 	self.player = player
+	return self
 
-func addCard(cardData : CardObject):
-	pass
+func setDeck(deck) -> HandObject:
+	self.deck = deck
+	return self
+
+####################################################################################################
+
+func addCard(card):
+	emit_signal("before_add", card)
+	cards.append(card)
+	emit_signal("after_add", card)
 
 func removeCard(card):
-	pass
+	emit_signal("before_remove", card)
+	cards.erase(card)
+	emit_signal("after_remove", card)

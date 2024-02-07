@@ -1,5 +1,30 @@
 extends Node
 
+
+var waitingFor : Array = []
+var connectTimer : float = CONNECT_MAX_TIME
+var isAllConnected : bool = false
+
+var idToAddress : Dictionary = {}
+var addressToID : Dictionary = {}
+var connectedPlayers : Array = []
+
+var disconnectTimers : Dictionary = {}
+
+
+const CONNECT_MAX_TIME : float = 16.0
+const DISCONNECT_MAX_TIME : float = 60.0
+
+####################################################################################################
+
+signal player_connected(playerID : int)
+signal player_reconnected(playerID : int)
+signal player_disconnected(playerID : int)
+signal player_rejected(playerID : int)
+signal start_game()
+
+####################################################################################################
+
 func _init():
 	var args : Array = OS.get_cmdline_args()
 	var i : int = 0
@@ -12,49 +37,102 @@ func _init():
 					Server.port = int(args[i])
 			elif arg == "-c":
 				i += 1
-				var userCon : UserConnection = UserConnection.strip(args[i])
-				if userCon != null:
-					Server.waitingFor.append(userCon)
+				var userAddress : UserAddress = UserAddress.strip(args[i])
+				if userAddress != null:
+					waitingFor.append(userAddress)
 		i += 1
 	
-	Server.numPlayers = Server.waitingFor.size()
+	Server.numPlayers = waitingFor.size()
 	
 	print("Waiting for users: ")
-	for user in Server.waitingFor:
+	for user in waitingFor:
 		print("  >  ", user)
 
 func _ready():
-	Server.connect("onPlayerConnect", self.onPlayerConnect)
-	Server.connect("onPlayerDisconnect", self.onPlayerDisconnect)
+	Server.connect("peer_connected", self.onPeerConnect)
+	Server.connect("peer_disconnected", self.onPeerDisconnect)
 
-func onPlayerConnect(playerID : int):
+####################################################################################################
+
+func onPeerConnect(playerID : int):
 	var playerIP : String = Server.serverPeer.get_peer(playerID).get_remote_address()
 	var playerPort : int = Server.serverPeer.get_peer(playerID).get_remote_port()
 	
-	if not playerID in Server.connectedPlayers.keys():
-		for i in range(Server.waitingFor.size()):
-			if Server.waitingFor[i].matches(playerIP, playerPort):
-				Server.waitingFor.remove_at(i)
-				Server.connectedPlayers[playerID] = [playerIP, playerPort]
-				print("ACCEPTED: User(" + playerIP + ":" + str(playerPort) + ")")
-				if Server.waitingFor.size() == 0:
-					print("Starting Match!")
-					Server.isAllConnected = true
-				return
-	else:
-		for userCon in Server.disconnectTimer.keys():
-			if userCon.matches(playerIP, playerPort):
-				Server.disconnectTimer.erase(userCon)
-				print("RECONNECT: User(" + playerIP + ":" + str(playerPort) + ")")
+	for userAddress in disconnectTimers.keys():
+		if userAddress.matches(playerIP, playerPort):
+			onPlayerReconnect(addressToID[userAddress], playerID)
+			return
+	
+	if not playerID in connectedPlayers:
+		for i in range(waitingFor.size()-1, -1, -1):
+			if waitingFor[i].matches(playerIP, playerPort):
+				var userAddress : UserAddress = waitingFor[i]
+				waitingFor.remove_at(i)
+				onPlayerConnect(playerID, userAddress)
 				return
 		
 	print("REJECTED: User(" + playerIP + ":" + str(playerPort) + ")")
+	emit_signal("player_rejected", playerID)
 	Server.serverPeer.disconnect_peer(playerID, true)
 
-func onPlayerDisconnect(playerID : int):
-	if playerID in Server.connectedPlayers.keys():
-		var playerIP : String = Server.connectedPlayers[playerID][0]
-		var playerPort : int = Server.connectedPlayers[playerID][1]
-		Server.disconnectTimer[UserConnection.new(playerIP, playerPort)] = Server.DISCONNECT_MAX_TIME
-		print("User(" + playerIP + ":" + str(playerPort) + ") disconnected.")
+func onPeerDisconnect(playerID : int):
+	if playerID in connectedPlayers:
+		onPlayerDisconnect(playerID)
 
+func _process(delta):
+	if not isAllConnected:
+		connectTimer -= delta
+		if connectTimer <= 0:
+			print("ERROR: Could not establish connection with all users!")
+			Server.disconnectAndQuit()
+	else:
+		for user in disconnectTimers.keys():
+			disconnectTimers[user] -= delta
+			if disconnectTimers[user] <= 0:
+				onPlayerRemove(addressToID[user])
+
+
+func onPlayerConnect(playerID : int, userAddress : UserAddress):
+	Server.playerIDs.append(playerID)
+	connectedPlayers.append(playerID)
+	idToAddress[playerID] = userAddress
+	addressToID[userAddress] = playerID
+	emit_signal("player_connected", playerID)
+	print("ACCEPTED: " + str(userAddress))
+	
+	if waitingFor.size() == 0:
+		print("Starting Game!")
+		isAllConnected = true
+		Server.lockServer()
+		emit_signal("start_game")
+
+func onPlayerDisconnect(playerID : int):
+	Server.unlockServer()
+	var userAddress : UserAddress = idToAddress[playerID]
+	disconnectTimers[userAddress] = DISCONNECT_MAX_TIME
+	print(str(userAddress) + " disconnected.")
+
+func onPlayerRemove(playerID : int):
+	print("ERROR: User could not reconnect")
+	emit_signal("player_disconnected", playerID)
+	disconnectTimers.erase(idToAddress[playerID])
+	connectedPlayers.erase(playerID)
+	addressToID.erase(idToAddress[playerID])
+	idToAddress.erase(playerID)
+	if disconnectTimers.size() == 0:
+		Server.lockServer()
+
+func onPlayerReconnect(oldID : int, newID : int):
+	var userAddress : UserAddress = idToAddress[oldID]
+	idToAddress.erase(oldID)
+	connectedPlayers.erase(oldID)
+	
+	disconnectTimers.erase(userAddress)
+	idToAddress[newID] = userAddress
+	addressToID[userAddress] = newID
+	connectedPlayers.append(newID)
+	if disconnectTimers.size() == 0:
+		Server.lockServer()
+	
+	print("RECONNECT: " + str(userAddress))
+	emit_signal("player_reconnected", oldID, newID)
