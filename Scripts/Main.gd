@@ -14,7 +14,47 @@ func onPlayerDisconnect(playerID : int) -> void:
 	if players.size() <= 1:
 		Server.disconnectAndQuit()
 
+####################################################################################################
+
+enum GAME_STATE {PRE_GAME, IN_GAME, END_GAME}
+enum PHASE {START, DRAW, BET, ACTION, REVEAL, INVADE, END}
+
+####################################################################################################
+###   ANY TIME   ###
+
 @rpc("any_peer", "call_remote", "reliable")
 func onConcede() -> void:
 	var playerID : int = multiplayer.get_remote_sender_id()
 	print("CONCEDE PRESSED by " + str(playerID))
+
+@rpc("any_peer", "call_remote", "reliable")
+func onQuit() -> void:
+	var playerID : int = multiplayer.get_remote_sender_id()
+	print("QUIT PRESSED by " + str(playerID))
+	Server.serverPeer.disconnect_peer(playerID)
+	Connector.onPlayerRemove(playerID)
+
+####################################################################################################
+###   PRE-GAME   ###
+
+@rpc("any_peer", "call_remote", "reliable")
+func setDeck(deckData : Dictionary) -> void:
+	var playerID : int = multiplayer.get_remote_sender_id()
+	if not DeckObject.validate(deckData):
+		print("ERROR: Could not validate deck of player " + str(playerID))
+		return
+	players[playerID].deck.deserialize(deckData)
+
+@rpc("any_peer", "call_remote", "reliable")
+func voteBoard(name : String) -> void:
+	pass
+
+####################################################################################################
+###   IN-GAME   ###
+
+####################################################################################################
+###   DUMMY FUNCTIONS FOR RPC   ###
+
+@rpc("authority", "call_remote", "reliable")
+func onQuitAnswered():
+	pass

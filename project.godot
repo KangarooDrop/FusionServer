@@ -17,6 +17,7 @@ config/icon="res://icon.svg"
 
 [autoload]
 
+ListOfCards="*res://Scripts/ListOfCards.gd"
 Server="*res://Scripts/Server.gd"
 Connector="*res://Scripts/Connector.gd"
 

@@ -42,6 +42,12 @@ func _init():
 					waitingFor.append(userAddress)
 		i += 1
 	
+	##################
+	if waitingFor.size() == 0:
+		Server.port = 25565
+		waitingFor.append(UserAddress.new("127.0.0.1", 0))
+	##################
+	
 	Server.numPlayers = waitingFor.size()
 	
 	print("Waiting for users: ")

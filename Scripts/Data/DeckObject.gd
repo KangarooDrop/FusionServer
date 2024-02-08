@@ -30,9 +30,23 @@ func setPlayer(player) -> DeckObject:
 	self.player = player
 	return self
 
+####################################################################################################
+
 func deserialize(data : Dictionary) -> DeckObject:
 	#TODO
 	return self
+
+enum VALIDATION_CODE \
+{
+	OK,
+	ERR_SIZE_TOO_LARGE,
+	ERR_SIZE_TOO_SMALL,
+	ERR_TOO_MANY_COPIES,
+	
+}
+
+static func validate(deckData : Dictionary) -> int:
+	return VALIDATION_CODE.OK
 
 ####################################################################################################
 
