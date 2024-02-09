@@ -21,8 +21,6 @@ var node = null
 enum ZONES {NONE, DECK, HAND, GRAVEYARD, TERRITORY, QUEUE, FUSED}
 var zone : int = ZONES.NONE
 
-enum ELEMENT {NULL = 0, FIRE = 1, WATER = 2, ROCK = 3, NATURE = 4, DEATH = 5, TECH = 6}
-
 ####################################################################################################
 
 func _init(uuid : int, name : String, power : int, toughness : int, elements : Array, abilities : Array):

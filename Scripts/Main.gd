@@ -40,7 +40,7 @@ func onQuit() -> void:
 @rpc("any_peer", "call_remote", "reliable")
 func setDeck(deckData : Dictionary) -> void:
 	var playerID : int = multiplayer.get_remote_sender_id()
-	if not DeckObject.validate(deckData):
+	if not Validator.validateDeck(deckData):
 		print("ERROR: Could not validate deck of player " + str(playerID))
 		return
 	players[playerID].deck.deserialize(deckData)
@@ -57,4 +57,8 @@ func voteBoard(name : String) -> void:
 
 @rpc("authority", "call_remote", "reliable")
 func onQuitAnswered():
+	pass
+
+@rpc("authority", "call_remote", "reliable")
+func onGetOpponentElements(elements : Array):
 	pass
