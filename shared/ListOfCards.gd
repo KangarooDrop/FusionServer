@@ -6,10 +6,10 @@ func matchElementsFromSave(saveString : String) -> Array:
 	var split : Array = saveString.split(" ")
 	var data : Array = []
 	for s in split:
-		if Validator.ELEMENT.has(s):
-			data.append(Validator.ELEMENT[s])
+		if CardData.ELEMENT.has(s):
+			data.append(CardData.ELEMENT[s])
 		else:
-			data.append(Validator.ELEMENT.NULL)
+			data.append(CardData.ELEMENT.NULL)
 	return data
 
 func matchAbilitiesFromSave(saveString : String) -> Array:
@@ -31,5 +31,13 @@ func _ready():
 			elif k == 'abilities':
 				datum = matchAbilitiesFromSave(datum)
 			dict[keys[j]] = datum
-		var card : CardObject = CardObject.makeCard(dict)
+		var card : CardData = CardData.new(dict)
 		cards.append(card)
+	
+	print(getCardByID(0))
+
+func getCardByID(index : int) -> CardData:
+	if index < 0 or index >= cards.size():
+		return null
+	else:
+		return cards[index].copy()
