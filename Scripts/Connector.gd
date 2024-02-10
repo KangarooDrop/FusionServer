@@ -18,10 +18,10 @@ const DISCONNECT_MAX_TIME : float = 60.0
 ####################################################################################################
 
 signal player_connected(playerID : int)
-signal player_reconnected(playerID : int)
+signal player_reconnected(oldID : int, newID : int)
 signal player_disconnected(playerID : int)
 signal player_rejected(playerID : int)
-signal start_game()
+signal all_connected()
 
 ####################################################################################################
 
@@ -107,10 +107,10 @@ func onPlayerConnect(playerID : int, userAddress : UserAddress):
 	print("ACCEPTED: " + str(userAddress))
 	
 	if waitingFor.size() == 0:
-		print("Starting Game!")
+		print("All Players Connected!")
 		isAllConnected = true
 		Server.lockServer()
-		emit_signal("start_game")
+		emit_signal("all_connected")
 
 func onPlayerDisconnect(playerID : int):
 	Server.unlockServer()

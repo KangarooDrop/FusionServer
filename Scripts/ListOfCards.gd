@@ -1,23 +1,22 @@
 extends Node
 
-const cardFilePath : String = "res://Data/CardsServer.csv"
 var cards : Array = []
 
 func matchElementsFromSave(saveString : String) -> Array:
 	var split : Array = saveString.split(" ")
 	var data : Array = []
 	for s in split:
-		if CardObject.ELEMENT.has(s):
-			data.append(CardObject.ELEMENT[s])
+		if Validator.ELEMENT.has(s):
+			data.append(Validator.ELEMENT[s])
 		else:
-			data.append(CardObject.ELEMENT.NULL)
+			data.append(Validator.ELEMENT.NULL)
 	return data
 
 func matchAbilitiesFromSave(saveString : String) -> Array:
 	return []
 
 func _ready():
-	var allCardData : Array = FileIO.readCSV(cardFilePath)
+	var allCardData : Array = FileIO.readCSV(FileIO.CARDS_PATH)
 	var keys : Array = allCardData[0]
 	for i in range(1, allCardData.size()-1):
 		var cardData : Array = allCardData[i]
