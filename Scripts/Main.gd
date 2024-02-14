@@ -11,6 +11,7 @@ var timeEndDeck : int = -1
 var boardVotes : Dictionary = {}
 var validBoards : Array = []
 var chosenBoard = null
+
 var chosenDecks : Dictionary = {}
 var isDecksDecided : bool = false
 

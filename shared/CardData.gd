@@ -11,6 +11,8 @@ var abilities : Array = []
 enum ELEMENT {NULL = 0, FIRE = 1, WATER = 2, ROCK = 3, NATURE = 4, DEATH = 5, TECH = 6}
 var elements : Array = []
 
+var artPath : String = ""
+
 ####################################################################################################
 
 func _init(data : Dictionary):
@@ -24,6 +26,7 @@ func serialize() -> Dictionary:
 	data['toughness'] = toughness
 	data['elements'] = elements
 	data['abilities'] = abilities
+	data['art_file'] = artPath
 	return data
 
 func deserialize(data : Dictionary) -> void:
@@ -39,6 +42,8 @@ func deserialize(data : Dictionary) -> void:
 		self.elements = data['elements']
 	if data.has('abilities'):
 		self.abilities = data['abilities']
+	if data.has('art_file'):
+		self.artPath = data['art_file']
 
 func copy() -> CardData:
 	return self.get_script().new(serialize())
