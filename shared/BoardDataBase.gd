@@ -1,5 +1,5 @@
 
-class_name BoardData
+class_name BoardDataBase
 
 const BOARD_VERSION : String = "0.01"
 
@@ -90,7 +90,7 @@ func getSaveData() -> Dictionary:
 	
 	return data
 
-func loadSaveData(data : Dictionary) -> BoardData:
+func loadSaveData(data : Dictionary) -> BoardDataBase:
 	clear()
 	self.name = data["name"]
 	

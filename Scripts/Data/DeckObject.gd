@@ -69,3 +69,14 @@ func reset(graveyard : Array):
 	graveyard.clear()
 	shuffle()
 	emit_signal("afterReset", cards, graveyard)
+
+func getElements() -> Array:
+	var elements : Array = []
+	for card in cards:
+		for element in card.elements:
+			if not element in elements:
+				elements.append(element)
+	if elements.size() == 0:
+		return [CardData.ELEMENT.NULL]
+	else:
+		return elements

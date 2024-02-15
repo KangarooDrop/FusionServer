@@ -51,15 +51,21 @@ func _process(delta):
 			pass
 
 func onPlayerConnect(playerID : int) -> void:
+	print("Player: " + str(playerID) + " connected")
 	players[playerID] = PlayerObject.new(playerID)
+	for id in players.keys():
+		rpc_id(id, "playerAdded", id == playerID, playerID, Color.RED, "_NO_NAME")
 
 func onPlayerDisconnect(playerID : int) -> void:
+	print("Player: " + str(playerID) + " dc'd")
+	rpc("playerRemoved", playerID)
 	players.erase(playerID)
 	if players.size() <= 1:
 		Server.disconnectAndQuit()
 
 func onPlayerReconnect(oldID : int, newID : int) -> void:
-	pass
+	print("Player: " + str(oldID) + " reconnected as " + str(newID))
+	rpc("playerReconnected", oldID, newID)
 
 func onAllConnected():
 	setGameState(GAME_STATE.BEFORE_GAME)
@@ -162,7 +168,7 @@ func chooseBoard() -> void:
 		return
 	
 	chosenBoard = validBoards[index]
-	rpc("onBoardChosen", chosenBoard)
+	rpc("onBoardChosen")
 	
 	timeEndDeck = Util.getTimeAbsolute() + TIME_TO_CHOOSE_DECK
 	rpc("syncTimerReceived", timeEndDeck)
@@ -187,6 +193,15 @@ func decksDecided():
 		else:
 			players[playerID].deck.deserialize(chosenDecks[playerID])
 	
+	var allPlayerIDs : Array = players.keys()
+	for playerID in allPlayerIDs:
+		var elements : Array = players[playerID].deck.getElements()
+		for otherID in allPlayerIDs:
+			if playerID != otherID:
+				rpc_id(otherID, "onSetOpponentElements", playerID, elements)
+	
+	rpc("setBoardData", chosenBoard)
+	
 	print("STARTING GAME!")
 	setGameState(GAME_STATE.IN_GAME)
 
@@ -201,11 +216,21 @@ func onQuitAnswered():
 	pass
 
 @rpc("authority", "call_remote", "reliable")
-func onGetOpponentElements(elements : Array):
+func syncTimerReceived(timeOnEnd : int):
+	pass
+
+####################################################################################################
+
+@rpc("authority", "call_remote", "reliable")
+func playerAdded(isSelf : bool, playerID : int, color : Color, username : String) -> void:
 	pass
 
 @rpc("authority", "call_remote", "reliable")
-func syncTimerReceived(timeOnEnd : int):
+func playerRemoved(playerID : int) -> void:
+	pass
+
+@rpc("authority", "call_remote", "reliable")
+func playerReconnected(oldID : int, newID : int) -> void:
 	pass
 
 ####################################################################################################
@@ -228,4 +253,12 @@ func setBoardVotes(voteData : Dictionary) -> void:
 
 @rpc("authority", "call_remote", "reliable")
 func gameStarted() -> void:
+	pass
+
+@rpc("authority", "call_remote", "reliable")
+func setBoardData(data : Dictionary) -> void:
+	pass
+
+@rpc("authority", "call_remote", "reliable")
+func onSetOpponentElements(playerID : int, elements : Array):
 	pass
