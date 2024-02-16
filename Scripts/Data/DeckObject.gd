@@ -77,6 +77,6 @@ func getElements() -> Array:
 			if not element in elements:
 				elements.append(element)
 	if elements.size() == 0:
-		return [CardData.ELEMENT.NULL]
+		return [CardDataBase.ELEMENT.NULL]
 	else:
 		return elements

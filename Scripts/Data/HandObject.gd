@@ -35,3 +35,13 @@ func removeCard(card):
 	emit_signal("before_remove", card)
 	cards.erase(card)
 	emit_signal("after_remove", card)
+
+####################################################################################################
+
+func getPossibleFuses(boardData : BoardDataServer) -> Dictionary:
+	var rtn : Dictionary = {}
+	return rtn
+
+func getPossibleReveals(boardData : BoardDataServer) -> Dictionary:
+	var rtn : Dictionary = {}
+	return rtn
