@@ -90,9 +90,13 @@ func getVotesByID() -> Dictionary:
 func onPlayerBoardVote(index : int) -> void:
 	if canVoteBoard():
 		var playerID : int = multiplayer.get_remote_sender_id()
-		print("Received board vote: " + str(playerID) + " >> " + str(index))
-		boardVotes[playerID] = index
-		rpc("setBoardVotes", getVotesByID(), players.size())
+		if index >= -1 and index < validBoards.size():
+			if index == -1:
+				boardVotes.erase(playerID)
+			else:
+				print("Received board vote: " + str(playerID) + " >> " + str(index))
+				boardVotes[playerID] = index
+			rpc("setBoardVotes", getVotesByID(), players.size())
 
 @rpc("any_peer", "call_remote", "reliable")
 func onBoardVoteConfirmed():
