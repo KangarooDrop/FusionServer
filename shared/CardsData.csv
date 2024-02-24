@@ -1,4 +1,5 @@
 name,art_file,power,toughness,elements,abilities
+_HIDDEN,Null/Null1.png,0,0,NULL,
 Faerie Bottle,Null/Null1.png,0,0,NULL,
 Blightling,Null/Null2.png,-3,-3,NULL,
 Slime,Null/Null3.png,1,1,NULL,

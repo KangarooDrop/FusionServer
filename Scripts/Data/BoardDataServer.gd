@@ -2,6 +2,17 @@ extends BoardDataGame
 
 class_name BoardDataServer
 
+signal territory_won(territory : TerritoryDataServer)
+signal territory_lost(territory : TerritoryDataServer)
+
+signal before_territory_invade(territory : TerritoryDataServer)
+signal after_territory_invade(territory : TerritoryDataServer)
+
+signal before_territory_defend(territory : TerritoryDataServer)
+signal after_territory_defend(territory : TerritoryDataServer)
+
+signal before_move()
+
 func getTerritoryScript() -> Script:
 	return TerritoryDataServer
 
@@ -28,3 +39,6 @@ func getPossibleReveals(playerID : int) -> Dictionary:
 					rtn[i] = []
 				rtn[i].append(j)
 	return rtn
+
+func connectAllSignals(main) -> void:
+	pass

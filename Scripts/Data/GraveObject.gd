@@ -1,5 +1,5 @@
 
-class_name HandObject
+class_name GraveObject
 
 var player = null
 var cards : Array = []
@@ -14,7 +14,7 @@ signal after_remove(player : PlayerObject, card)
 
 ####################################################################################################
 
-func setPlayer(player) -> HandObject:
+func setPlayer(player) -> GraveObject:
 	self.player = player
 	return self
 
@@ -31,11 +31,3 @@ func removeCard(card):
 	emit_signal("after_remove", player, card)
 
 ####################################################################################################
-
-func getPossibleFuses(boardData : BoardDataServer) -> Dictionary:
-	var rtn : Dictionary = {}
-	return rtn
-
-func getPossibleReveals(boardData : BoardDataServer) -> Dictionary:
-	var rtn : Dictionary = {}
-	return rtn

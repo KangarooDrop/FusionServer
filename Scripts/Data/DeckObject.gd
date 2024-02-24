@@ -1,33 +1,38 @@
 
 class_name DeckObject
 
-var player = null
-var hand = null
+var player : PlayerObject = null
+var hand : HandObject = null
+var grave : GraveObject = null
 
 var cards : Array = []
 
 ####################################################################################################
 
-signal before_draw(card)
-signal after_draw(card)
+signal before_draw(player : PlayerObject, card)
+signal after_draw(player : PlayerObject, card)
 
-signal before_remove(card)
-signal after_remove(card)
+signal before_remove(player : PlayerObject, card)
+signal after_remove(player : PlayerObject, card)
 
-signal before_shuffle(cards : Array)
-signal after_shuffle(cards : Array)
+signal before_shuffle(player : PlayerObject, deckCards : Array)
+signal after_shuffle(player : PlayerObject, deckCards : Array)
 
-signal before_reset(cards : Array, graveyard : Array)
-signal after_reset(cards : Array, graveyard : Array)
+signal before_reset(player : PlayerObject, deckCards : Array, graveyCards : Array)
+signal after_reset(player : PlayerObject, deckCards : Array, graveyCards : Array)
 
 ####################################################################################################
 
-func setHand(hand) -> DeckObject:
+func setPlayer(player : PlayerObject) -> DeckObject:
+	self.player = player
+	return self
+
+func setHand(hand : HandObject) -> DeckObject:
 	self.hand = hand
 	return self
 
-func setPlayer(player) -> DeckObject:
-	self.player = player
+func setGrave(grave : GraveObject) -> DeckObject:
+	self.grave = grave
 	return self
 
 ####################################################################################################
@@ -40,35 +45,38 @@ func deserialize(data : Dictionary) -> DeckObject:
 
 func draw() -> void:
 	var cardToDraw = null
-	if cards.size() > 0:
-		cardToDraw = cards.pop_front()
-	emit_signal("beforeDraw", cardToDraw)
+	if self.cards.size() <= 0:
+		reset()
+	if self.cards.size() > 0:
+		cardToDraw = self.cards.pop_front()
+		
+	emit_signal("before_draw", player, cardToDraw)
 	hand.addCard(cardToDraw)
-	emit_signal("afterDraw")
+	emit_signal("after_draw", player, cardToDraw)
 
 func removeCard(cardData):
-	var index : int = cards.find(cardData)
+	var index : int = self.cards.find(cardData)
 	if index != -1:
 		removeAt(index)
 
 func removeAt(index : int):
-	if index >= 0 and index < cards.size():
+	if index >= 0 and index < self.cards.size():
 		var cardToRemove = cards[index]
-		emit_signal("beforeRemove", cardToRemove)
-		cards.erase(cardToRemove)
-		emit_signal("afterRemove", cardToRemove)
+		emit_signal("before_remove", player, cardToRemove)
+		self.cards.erase(cardToRemove)
+		emit_signal("after_remove", player, cardToRemove)
 
 func shuffle() -> void:
-	emit_signal("beforeShuffle", cards)
+	emit_signal("before_shuffle", player, self.cards)
 	cards.shuffle()
-	emit_signal("afterShuffle", cards)
+	emit_signal("after_shuffle", player, self.cards)
 
-func reset(graveyard : Array):
-	emit_signal("beforeReset", cards, graveyard)
-	cards += graveyard
-	graveyard.clear()
+func reset():
+	emit_signal("before_reset", player, self.cards, grave.cards)
+	self.cards += grave.cards
+	grave.cards.clear()
 	shuffle()
-	emit_signal("afterReset", cards, graveyard)
+	emit_signal("after_reset", player, self.cards, grave.cards)
 
 func getElements() -> Array:
 	var elements : Array = []

@@ -29,7 +29,9 @@ func _process(delta):
 
 func onPlayerConnect(playerID : int) -> void:
 	print("Player: " + str(playerID) + " connected")
-	players[playerID] = PlayerObject.new(playerID, Color.RED, "_NO_NAME")
+	var newPlayer : PlayerObject = PlayerObject.new(playerID, Color.RED, "_NO_NAME")
+	newPlayer.connectAllSignals(self)
+	players[playerID] = newPlayer
 	for id in players.keys():
 		rpc_id(id, "playerAdded", id == playerID, players[playerID].playerID, players[playerID].color, players[playerID].username)
 
@@ -141,6 +143,7 @@ func chooseBoard(fromRandom : bool = false) -> void:
 	boardData = BoardDataServer.new()
 	boardData.loadSaveData(chosenBoard)
 	boardData.setPlayers(players.keys())
+	boardData.connectAllSignals(self)
 	rpc("onBoardChosen")
 	
 	timeEndDeck = Util.getTimeAbsolute() + TIME_TO_CHOOSE_DECK
@@ -153,7 +156,7 @@ func canSelectDeck() -> bool:
 func deckSelected(deckData : Dictionary) -> void:
 	if canSelectDeck():
 		var playerID : int = multiplayer.get_remote_sender_id()
-		if Validator.validateDeck(deckData) and canSelectDeck():
+		if Validator.validateDeck(deckData) == Validator.DECK_CODE.OK:
 			print("Received deck data from ", playerID)
 			chosenDecks[playerID] = deckData
 		else:
@@ -163,7 +166,7 @@ func deckSelected(deckData : Dictionary) -> void:
 func onDeckConfirmed() -> void:
 	if canSelectDeck():
 		var playerID : int = multiplayer.get_remote_sender_id()
-		if not playerID in chosenDeckConfirmed:
+		if not playerID in chosenDeckConfirmed and playerID in chosenDecks:
 			chosenDeckConfirmed.append(playerID)
 			if chosenDeckConfirmed.size() == players.size():
 				decksDecided()
@@ -171,7 +174,7 @@ func onDeckConfirmed() -> void:
 func decksDecided():
 	for playerID in players.keys():
 		if not chosenDecks.has(playerID):
-			onConcedeLocal(playerID)
+			onQuitLocal(playerID)
 			print("ERROR: No deck data for " + str(playerID))
 		else:
 			players[playerID].deck.deserialize(chosenDecks[playerID])
@@ -415,6 +418,126 @@ func onInvade() -> void:
 	pass
 
 ####################################################################################################
+###   PLAYER SIGNALS   ###
+
+
+####################################################################################################
+###   DECK SIGNALS   ###
+func beforeDrawDeck(player : PlayerObject, card : CardDataGame) -> void:
+	pass
+func afterDrawDeck(player : PlayerObject, card : CardDataGame) -> void:
+	pass
+
+func beforeRemoveDeck(player : PlayerObject, card : CardDataGame) -> void:
+	pass
+func afterRemoveDeck(player : PlayerObject, card : CardDataGame) -> void:
+	pass
+
+func beforeShuffleDeck(player : PlayerObject, card : CardDataGame) -> void:
+	pass
+func afterShuffleDeck(player : PlayerObject, card : CardDataGame) -> void:
+	pass
+
+func beforeResetDeck(player : PlayerObject, card : CardDataGame) -> void:
+	pass
+func afterResetDeck(player : PlayerObject, card : CardDataGame) -> void:
+	pass
+
+####################################################################################################
+###   HAND SIGNALS   ###
+
+func beforeAddHand(player : PlayerObject, card : CardDataGame) -> void:
+	pass
+func afterAddHand(player : PlayerObject, card : CardDataGame) -> void:
+	rpc_id(player.playerID, "receiveCommand", [CardDataBase.ZONES.HAND], {})
+
+func beforeRemoveHand(player : PlayerObject, card : CardDataGame) -> void:
+	pass
+func afterRemoveHand(player : PlayerObject, card : CardDataGame) -> void:
+	pass
+
+####################################################################################################
+###   GRAVE SIGNALS   ###
+
+func beforeAddGrave(player : PlayerObject, card : CardDataGame) -> void:
+	pass
+func afterAddGrave(player : PlayerObject, card : CardDataGame) -> void:
+	pass
+
+func beforeRemoveGrave(player : PlayerObject, card : CardDataGame) -> void:
+	pass
+func afterRemoveGrave(player : PlayerObject, card : CardDataGame) -> void:
+	pass
+
+####################################################################################################
+###   BOARD SIGNALS   ###
+
+func beforeBet(player : PlayerObject, territory : TerritoryDataServer) -> void:
+	pass
+
+func beforeTerritoryWon(territory : TerritoryDataServer) -> void:
+	pass
+func afterTerritoryWon(territory : TerritoryDataServer) -> void:
+	pass
+
+func beforeTerritoryLost(territory : TerritoryDataServer) -> void:
+	pass
+func afterTerritoryLost(territory : TerritoryDataServer) -> void:
+	pass
+
+####################################################################################################
+###   CREATURE SIGNALS   ###
+
+func beforeCreatureMove(card : CardDataGame, territory : TerritoryDataServer) -> void:
+	pass
+func afterCreatureMove(card : CardDataGame, territory : TerritoryDataServer) -> void:
+	pass
+
+func beforeCreatureInvade(card : CardDataGame, territory : TerritoryDataServer) -> void:
+	pass
+func afterCreatureInvade(card : CardDataGame, territory : TerritoryDataServer) -> void:
+	pass
+
+func beforeCreatureDefend(card : CardDataGame, territory : TerritoryDataServer) -> void:
+	pass
+func afterCreatureDefend(card : CardDataGame, territory : TerritoryDataServer) -> void:
+	pass
+
+func beforeCreatureDamage() -> void:
+	pass
+func afterCreatureDamage() -> void:
+	pass
+
+func beforeCreatureKill() -> void:
+	pass
+func afterCreatureKill() -> void:
+	pass
+
+func beforeCreatureReveal() -> void:
+	pass
+func afterCreatureReveal() -> void:
+	pass
+
+func beforeCreatureDeath() -> void:
+	pass
+func afterCreatureDeath() -> void:
+	pass
+
+func beforeCreatureLeave() -> void:
+	pass
+func afterCreatureLeave() -> void:
+	pass
+
+####################################################################################################
+###   TIMING SIGNALS   ###
+
+func onPhaseStart() -> void:
+	pass
+
+func onPhaseEnd() -> void:
+	pass
+
+####################################################################################################
 ###   ANY TIME   ###
 
 @rpc("any_peer", "call_remote", "reliable")
@@ -427,9 +550,12 @@ func onConcedeLocal(playerID : int):
 	pass
 
 @rpc("any_peer", "call_remote", "reliable")
-func onQuit() -> void:
-	var playerID : int = multiplayer.get_remote_sender_id()
+func onQuit(playerID = -1) -> void:
+	playerID = multiplayer.get_remote_sender_id()
 	print("QUIT PRESSED by " + str(playerID))
+	onQuitLocal(playerID)
+
+func onQuitLocal(playerID : int) -> void:
 	Server.serverPeer.disconnect_peer(playerID)
 	Connector.onPlayerRemove(playerID)
 
@@ -527,4 +653,8 @@ func beginPhaseReceived(phase : CardDataBase.PHASE) -> void:
 
 @rpc("authority", "call_remote", "reliable")
 func endPhaseReceived(phase : CardDataBase.PHASE) -> void:
+	pass
+
+@rpc("authority", "call_remote", "reliable")
+func receiveCommand(command) -> void:
 	pass
